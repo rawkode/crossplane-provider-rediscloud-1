@@ -1,0 +1,12 @@
+apiVersion: transit.redis.io/v1alpha1
+kind: GatewayAttachment
+metadata:
+  annotations:
+    meta.upbound.io/example-id: transit/v1alpha1/gatewayattachment
+  labels:
+    testing.upbound.io/example-name: attachment
+  name: attachment
+spec:
+  forProvider:
+    subscriptionId: "113491"
+    tgwId: ${data.rediscloud_transit_gateway.gateway.tgw_id}

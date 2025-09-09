@@ -1,0 +1,10 @@
+apiVersion: acl.redis.io/v1alpha1
+kind: Rule
+metadata:
+  name: example-acl-rule
+spec:
+  forProvider:
+    name: read-only-rule
+    rule: "+@read ~*"
+  providerConfigRef:
+    name: default

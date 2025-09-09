@@ -1,0 +1,9 @@
+[project]
+name = "crossplane-provider-rediscloud"
+version = "0.1.0"
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[tool.uv]
+dev-dependencies = []

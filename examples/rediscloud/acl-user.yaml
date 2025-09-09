@@ -1,0 +1,14 @@
+apiVersion: acl.redis.io/v1alpha1
+kind: User
+metadata:
+  name: example-acl-user
+spec:
+  forProvider:
+    name: app-user
+    role: user
+    passwordSecretRef:
+      name: redis-user-password
+      namespace: default
+      key: password
+  providerConfigRef:
+    name: default

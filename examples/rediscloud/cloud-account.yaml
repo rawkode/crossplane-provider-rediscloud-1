@@ -1,0 +1,30 @@
+apiVersion: cloud.redis.io/v1alpha1
+kind: Account
+metadata:
+  name: example-cloud-account
+spec:
+  forProvider:
+    accessKeyIdSecretRef:
+      name: aws-credentials
+      namespace: default
+      key: access-key-id
+    accessSecretKeySecretRef:
+      name: aws-credentials
+      namespace: default
+      key: secret-access-key
+    consoleUsernameSecretRef:
+      name: aws-credentials
+      namespace: default
+      key: console-username
+    consolePasswordSecretRef:
+      name: aws-credentials
+      namespace: default
+      key: console-password
+    name: my-aws-account
+    provider: AWS
+    signInLoginUrlSecretRef:
+      name: aws-credentials
+      namespace: default
+      key: sign-in-login-url
+  providerConfigRef:
+    name: default

@@ -1,0 +1,26 @@
+apiVersion: subscription.redis.io/v1alpha1
+kind: Database
+metadata:
+  name: example-database
+spec:
+  forProvider:
+    subscriptionIdRef:
+      name: example-subscription
+    name: my-redis-database
+    protocol: redis
+    memoryLimitInGb: 1
+    dataPersistence: aof-every-1-second
+    throughputMeasurement:
+      by: operations-per-second
+      value: 10000
+    replication: true
+    modules:
+      - name: RedisJSON
+      - name: RedisSearch
+    alert:
+      - name: connections-limit
+        value: 80
+      - name: dataset-size
+        value: 80
+  providerConfigRef:
+    name: default
