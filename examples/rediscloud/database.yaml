@@ -4,15 +4,15 @@ metadata:
   name: example-database
 spec:
   forProvider:
+    # Reference to the subscription resource
     subscriptionIdRef:
       name: example-subscription
     name: my-redis-database
     protocol: redis
     memoryLimitInGb: 1
     dataPersistence: aof-every-1-second
-    throughputMeasurement:
-      by: operations-per-second
-      value: 10000
+    throughputMeasurementBy: operations-per-second
+    throughputMeasurementValue: 10000
     replication: true
     modules:
       - name: RedisJSON

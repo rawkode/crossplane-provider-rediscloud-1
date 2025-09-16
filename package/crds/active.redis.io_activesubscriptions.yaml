@@ -136,6 +136,34 @@ spec:
                           type: array
                       type: object
                     type: array
+                  customerManagedKey:
+                    description: |-
+                      The customer managed keys (CMK) to use for this subscription. In an active-active subscription, you must set a key for each region.
+                      CMK resources used to encrypt the databases in this subscription. Ignored if `customer_managed_key_enabled` set to false. See documentation for CMK flow.
+                    items:
+                      properties:
+                        region:
+                          description: |-
+                            Name of the region for the customer managed key as defined by the cloud provider.
+                            Name of region for the customer managed key as defined by the cloud provider.
+                          type: string
+                        resourceName:
+                          description: |-
+                            Resource name of the customer managed key as defined by the cloud provider, e.g. projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/KEY_NAME
+                            Resource name of the customer managed key as defined by the cloud provider, e.g. projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/KEY_NAME
+                          type: string
+                      type: object
+                    type: array
+                  customerManagedKeyDeletionGracePeriod:
+                    description: |-
+                      The grace period for deleting the subscription. If not set, will default to immediate deletion grace period.
+                      The grace period for deleting the subscription. If not set, will default to immediate deletion grace period.
+                    type: string
+                  customerManagedKeyEnabled:
+                    description: |-
+                      Whether to enable the CMK flow.
+                      Whether to enable CMK (customer managed key) for the subscription. If this is true, then the subscription will be put in a pending state until you supply the CMEK. See documentation for further details on this process. Defaults to false.
+                    type: boolean
                   maintenanceWindows:
                     description: |-
                       The subscription's maintenance window specification, documented below.
@@ -181,7 +209,7 @@ spec:
                     type: string
                   paymentMethod:
                     description: |-
-                      card or marketplace). If credit-card is specified, payment_method_id must be defined. Default: 'credit-card'. (Changes to) this attribute are ignored after creation.
+                      The payment method for the requested subscription, (either credit-card or marketplace).  Must not be set for direct contracts. If credit-card is specified, payment_method_id must be defined. Default: 'credit-card'. (Changes to) this attribute are ignored after creation.
                       Payment method for the requested subscription. If credit card is specified, the payment method id must be defined. This information is only used when creating a new subscription and any changes will be ignored after this.
                     type: string
                   paymentMethodId:
@@ -191,7 +219,7 @@ spec:
                     type: string
                   redisVersion:
                     description: |-
-                      The Redis version of the databases in the subscription. If omitted, the Redis version will be the default. Modifying this attribute will force creation of a new resource.
+                      The Redis version of the databases in the subscription. If omitted, the Redis version will be the default. Deprecated: This attribute is deprecated on the subscription level. Please specify
                       Version of Redis to create
                     type: string
                 type: object
@@ -271,6 +299,34 @@ spec:
                           type: array
                       type: object
                     type: array
+                  customerManagedKey:
+                    description: |-
+                      The customer managed keys (CMK) to use for this subscription. In an active-active subscription, you must set a key for each region.
+                      CMK resources used to encrypt the databases in this subscription. Ignored if `customer_managed_key_enabled` set to false. See documentation for CMK flow.
+                    items:
+                      properties:
+                        region:
+                          description: |-
+                            Name of the region for the customer managed key as defined by the cloud provider.
+                            Name of region for the customer managed key as defined by the cloud provider.
+                          type: string
+                        resourceName:
+                          description: |-
+                            Resource name of the customer managed key as defined by the cloud provider, e.g. projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/KEY_NAME
+                            Resource name of the customer managed key as defined by the cloud provider, e.g. projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/KEY_NAME
+                          type: string
+                      type: object
+                    type: array
+                  customerManagedKeyDeletionGracePeriod:
+                    description: |-
+                      The grace period for deleting the subscription. If not set, will default to immediate deletion grace period.
+                      The grace period for deleting the subscription. If not set, will default to immediate deletion grace period.
+                    type: string
+                  customerManagedKeyEnabled:
+                    description: |-
+                      Whether to enable the CMK flow.
+                      Whether to enable CMK (customer managed key) for the subscription. If this is true, then the subscription will be put in a pending state until you supply the CMEK. See documentation for further details on this process. Defaults to false.
+                    type: boolean
                   maintenanceWindows:
                     description: |-
                       The subscription's maintenance window specification, documented below.
@@ -316,7 +372,7 @@ spec:
                     type: string
                   paymentMethod:
                     description: |-
-                      card or marketplace). If credit-card is specified, payment_method_id must be defined. Default: 'credit-card'. (Changes to) this attribute are ignored after creation.
+                      The payment method for the requested subscription, (either credit-card or marketplace).  Must not be set for direct contracts. If credit-card is specified, payment_method_id must be defined. Default: 'credit-card'. (Changes to) this attribute are ignored after creation.
                       Payment method for the requested subscription. If credit card is specified, the payment method id must be defined. This information is only used when creating a new subscription and any changes will be ignored after this.
                     type: string
                   paymentMethodId:
@@ -326,7 +382,7 @@ spec:
                     type: string
                   redisVersion:
                     description: |-
-                      The Redis version of the databases in the subscription. If omitted, the Redis version will be the default. Modifying this attribute will force creation of a new resource.
+                      The Redis version of the databases in the subscription. If omitted, the Redis version will be the default. Deprecated: This attribute is deprecated on the subscription level. Please specify
                       Version of Redis to create
                     type: string
                 type: object
@@ -565,6 +621,39 @@ spec:
                           type: array
                       type: object
                     type: array
+                  customerManagedKey:
+                    description: |-
+                      The customer managed keys (CMK) to use for this subscription. In an active-active subscription, you must set a key for each region.
+                      CMK resources used to encrypt the databases in this subscription. Ignored if `customer_managed_key_enabled` set to false. See documentation for CMK flow.
+                    items:
+                      properties:
+                        region:
+                          description: |-
+                            Name of the region for the customer managed key as defined by the cloud provider.
+                            Name of region for the customer managed key as defined by the cloud provider.
+                          type: string
+                        resourceName:
+                          description: |-
+                            Resource name of the customer managed key as defined by the cloud provider, e.g. projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/KEY_NAME
+                            Resource name of the customer managed key as defined by the cloud provider, e.g. projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/KEY_NAME
+                          type: string
+                      type: object
+                    type: array
+                  customerManagedKeyDeletionGracePeriod:
+                    description: |-
+                      The grace period for deleting the subscription. If not set, will default to immediate deletion grace period.
+                      The grace period for deleting the subscription. If not set, will default to immediate deletion grace period.
+                    type: string
+                  customerManagedKeyEnabled:
+                    description: |-
+                      Whether to enable the CMK flow.
+                      Whether to enable CMK (customer managed key) for the subscription. If this is true, then the subscription will be put in a pending state until you supply the CMEK. See documentation for further details on this process. Defaults to false.
+                    type: boolean
+                  customerManagedKeyRedisServiceAccount:
+                    description: |-
+                      Outputs the id of the service account associated with the subscription. Useful as part of the CMK flow.
+                      The principal of the Redis service account that the subscription is created in. This is used by the user to give access to their customer managed key
+                    type: string
                   id:
                     type: string
                   maintenanceWindows:
@@ -612,7 +701,7 @@ spec:
                     type: string
                   paymentMethod:
                     description: |-
-                      card or marketplace). If credit-card is specified, payment_method_id must be defined. Default: 'credit-card'. (Changes to) this attribute are ignored after creation.
+                      The payment method for the requested subscription, (either credit-card or marketplace).  Must not be set for direct contracts. If credit-card is specified, payment_method_id must be defined. Default: 'credit-card'. (Changes to) this attribute are ignored after creation.
                       Payment method for the requested subscription. If credit card is specified, the payment method id must be defined. This information is only used when creating a new subscription and any changes will be ignored after this.
                     type: string
                   paymentMethodId:
@@ -653,7 +742,7 @@ spec:
                     type: array
                   redisVersion:
                     description: |-
-                      The Redis version of the databases in the subscription. If omitted, the Redis version will be the default. Modifying this attribute will force creation of a new resource.
+                      The Redis version of the databases in the subscription. If omitted, the Redis version will be the default. Deprecated: This attribute is deprecated on the subscription level. Please specify
                       Version of Redis to create
                     type: string
                 type: object

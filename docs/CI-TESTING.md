@@ -77,12 +77,43 @@ Requirements:
 
 Run e2e tests with uptest:
 ```bash
+# Run with default examples (subscription + database)
 make e2e
+
+# Run with custom examples
+UPTEST_EXAMPLE_LIST="examples/rediscloud/acl-user.yaml" make e2e
 ```
 
-Required environment variables:
-- `UPTEST_EXAMPLE_LIST`: Comma-separated list of example files
-- `UPTEST_CLOUD_CREDENTIALS`: Cloud provider credentials
+Environment variables:
+- `UPTEST_EXAMPLE_LIST`: Comma-separated list of example files (default: `examples/rediscloud/subscription.yaml,examples/rediscloud/database.yaml`)
+- `UPTEST_CLOUD_CREDENTIALS`: Cloud provider credentials in JSON format
+- `REDISCLOUD_API_KEY`: RedisCloud API key (for Pro subscriptions)
+- `REDISCLOUD_SECRET_KEY`: RedisCloud secret key (for Pro subscriptions)
+- `REDISCLOUD_URL`: RedisCloud API URL (default: https://api.redislabs.com/v1)
+- `REDISCLOUD_PAYMENT_METHOD_ID` (optional): Payment method ID for Pro subscriptions
+
+#### Payment Method Configuration for Pro Subscriptions
+
+Pro subscriptions require a valid payment method ID. The test infrastructure automatically handles this:
+
+1. **Automatic Fetching**: If RedisCloud API credentials are provided, the setup script fetches the first available payment method ID from your account
+2. **Manual Override**: You can specify a payment method ID directly using `REDISCLOUD_PAYMENT_METHOD_ID`
+3. **Fallback**: If no credentials are provided, a default ID (1) is used, which may cause tests to fail
+
+Running with 1Password:
+```bash
+op run -- make e2e
+```
+
+Fetch payment methods from your account:
+```bash
+op run -- make rediscloud-payment-methods
+```
+
+Get first payment method ID:
+```bash
+op run -- make rediscloud-first-payment-method-id
+```
 
 ## Code Coverage
 
@@ -120,6 +151,10 @@ make check-examples    # Validate example manifests
 make lint              # Run linting
 make check-diff        # Verify generated code
 make crddiff           # Check for breaking CRD changes
+
+# RedisCloud API integration
+make rediscloud-payment-methods          # List available payment methods
+make rediscloud-first-payment-method-id  # Get first payment method ID
 ```
 
 ## Contributing

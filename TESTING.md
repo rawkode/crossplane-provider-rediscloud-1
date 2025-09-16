@@ -1,12 +1,14 @@
 # Testing the RedisCloud Crossplane Provider
 
-This guide explains how to test the RedisCloud Crossplane provider locally using kind (Kubernetes in Docker).
+This guide explains how to test the RedisCloud Crossplane provider using standard Crossplane workflows.
 
 ## Prerequisites
 
-- Docker running
+- Docker or Podman installed and running
+- Go 1.21+ installed
 - Access to RedisCloud API credentials
-- `devenv` shell environment (includes all necessary tools)
+- Make installed
+- Kind (Kubernetes in Docker) installed
 
 ## Quick Start
 
@@ -17,108 +19,174 @@ This guide explains how to test the RedisCloud Crossplane provider locally using
    # Create a new API key or use existing one
    ```
 
-2. **Configure Credentials**
+2. **Set Credentials as Environment Variables**
+
+   Copy `.envrc.example` to `.envrc` and update with your credentials:
    ```bash
-   # Edit .envrc and replace placeholder values
-   export REDISCLOUD_API_KEY="your-actual-api-key"
-   export REDISCLOUD_SECRET_KEY="your-actual-secret-key"
-   
-   # Reload environment
-   direnv allow
+   cp .envrc.example .envrc
+   # Edit .envrc with your actual API credentials
+   source .envrc
    ```
 
-3. **Run Quick Start**
+   Or set directly:
    ```bash
-   ./scripts/quick-start.sh
+   # For Pro subscriptions, set RedisCloud API credentials
+   # These are used to automatically fetch payment method IDs
+   export REDISCLOUD_API_KEY="your-api-key"
+   export REDISCLOUD_SECRET_KEY="your-secret-key"
+   export REDISCLOUD_URL="https://api.redislabs.com/v1"
+
+   # Optionally specify a payment method ID directly
+   # export REDISCLOUD_PAYMENT_METHOD_ID=47739
    ```
 
-4. **Test the Provider**
+   For 1Password users:
    ```bash
-   ./scripts/test-provider.sh
+   # Store your op:// references in .envrc.local
+   echo 'export REDISCLOUD_API_KEY="op://Private/Redis Cloud/api-tokens/api-account-key"' >> .envrc.local
+   echo 'export REDISCLOUD_SECRET_KEY="op://Private/Redis Cloud/api-tokens/api-user-key"' >> .envrc.local
    ```
 
-## Step-by-Step Testing
+3. **Run Tests**
+   ```bash
+   # Run unit tests
+   make test
 
-### 1. Create Kind Cluster
+   # Run end-to-end tests with local deployment
+   make e2e
+
+   # Or with 1Password (if credentials are stored there)
+   op run -- make e2e
+   ```
+
+## Testing Workflows
+
+### Unit Tests
+
+Run unit tests for all packages:
 ```bash
-./scripts/test-provider.sh cluster
+make test
 ```
 
-This creates a kind cluster named `rediscloud-test` with proper port mappings.
-
-### 2. Install Crossplane
+View test coverage:
 ```bash
-./scripts/test-provider.sh crossplane
+make test
+go tool cover -html=_output/tests/linux_amd64/coverage.txt
 ```
 
-Installs Crossplane using Helm in the `crossplane-system` namespace.
+### Local Development Testing
 
-### 3. Install Provider
+1. **Start local Crossplane control plane**
+   ```bash
+   make local-deploy
+   ```
+
+   This will:
+   - Start a Kind cluster
+   - Install Crossplane
+   - Build and install the provider locally
+   - Wait for all components to be ready
+
+2. **Apply test resources**
+   ```bash
+   kubectl apply -f examples/essentials/subscription.yaml
+   kubectl get subscription -w
+   ```
+
+3. **Check provider logs**
+   ```bash
+   kubectl logs -n crossplane-system -l pkg.crossplane.io/provider=provider-rediscloud -f
+   ```
+
+### End-to-End Testing with Uptest
+
+The provider uses Crossplane's `uptest` tool for automated e2e testing:
+
 ```bash
-./scripts/test-provider.sh provider
+# Run e2e tests with default examples (subscription + database)
+make e2e
+
+# Run e2e tests with specific examples
+export UPTEST_EXAMPLE_LIST="examples/essentials/subscription.yaml"
+make e2e
+
+# Or specify inline
+UPTEST_EXAMPLE_LIST="examples/rediscloud/acl-user.yaml" make e2e
 ```
 
-Builds the provider image, loads it into kind, and installs it as a Crossplane provider.
+**Default test examples**: `examples/rediscloud/subscription.yaml,examples/rediscloud/database.yaml`
 
-### 4. Configure Credentials
+#### Payment Method Configuration for Pro Subscriptions
+
+Pro subscriptions require a valid payment method ID. The test setup script automatically handles this by:
+
+1. **Automatic Fetching**: If RedisCloud API credentials are provided, the setup script fetches the first available payment method ID from your account
+2. **Manual Override**: You can specify a payment method ID directly using `REDISCLOUD_PAYMENT_METHOD_ID`
+3. **Fallback**: If no credentials are provided, a default ID (1) is used, which may cause tests to fail
+
 ```bash
-./scripts/test-provider.sh config
+# List available payment methods
+make rediscloud-payment-methods
+
+# Get the first payment method ID
+make rediscloud-first-payment-method-id
+
+# Run e2e tests with automatic payment method fetching
+make e2e
+
+# Or with 1Password
+op run -- make e2e
 ```
 
-Creates a Kubernetes secret with your RedisCloud credentials and a ProviderConfig that references it.
+### Manual Testing
 
-### 5. Test with Sample Resource
+1. **Build the provider**
+   ```bash
+   make build
+   ```
+
+2. **Start Crossplane locally**
+   ```bash
+   # In one terminal, start the control plane
+   make controlplane.up
+   ```
+
+3. **Install the provider**
+   ```bash
+   # In another terminal
+   make local.xpkg.deploy.provider.provider-rediscloud
+   ```
+
+4. **Create provider config with credentials**
+   ```bash
+   kubectl create secret generic rediscloud-creds \
+     --namespace=crossplane-system \
+     --from-literal=credentials='{
+       "api_key": "your-api-key",
+       "secret_key": "your-secret-key",
+       "url": "https://api.redislabs.com/v1"
+     }'
+
+   kubectl apply -f examples/providerconfig/providerconfig.yaml
+   ```
+
+5. **Create resources**
+   ```bash
+   kubectl apply -f examples/essentials/subscription.yaml
+   ```
+
+## Available Make Targets
+
 ```bash
-./scripts/test-provider.sh test
+make help              # Show all available targets
+make test             # Run unit tests
+make e2e              # Run end-to-end tests
+make build            # Build the provider binary
+make local-deploy     # Deploy provider to local Kind cluster
+make run              # Run provider locally (out of cluster)
 ```
 
-Creates a test Essentials subscription (free tier) to verify the provider works.
-
-### 6. Check Status
-```bash
-./scripts/test-provider.sh status
-```
-
-Shows the status of all components in the cluster.
-
-## Available Resources
-
-The provider includes the following resource groups:
-
-### ACL Resources (`acl.redis.io`)
-- `Role` - ACL roles for database access
-- `Rule` - ACL rules defining permissions  
-- `User` - ACL users with assigned roles
-
-### Active-Active Resources (`active.redis.io`)
-- `ActiveSubscription` - Active-Active subscriptions
-- `ActiveSubscriptionDatabase` - Databases in AA subscriptions
-- `ActiveSubscriptionPeering` - VPC peering for AA subscriptions
-- `ActiveSubscriptionRegions` - Region management for AA
-- `ActiveTransitGatewayAttachment` - Transit gateway attachments
-- `ActivePrivateServiceConnect*` - Private service connect resources
-
-### Cloud Resources (`cloud.redis.io`)
-- `Account` - Cloud provider account configurations
-
-### Essentials Resources (`essentials.redis.io`)
-- `Database` - Essentials tier databases
-- `Subscription` - Essentials tier subscriptions
-
-### Private Service Connect (`private.redis.io`)
-- `ServiceConnect` - Private service connect
-- `ServiceConnectEndpoint` - Service connect endpoints
-- `ServiceConnectEndpointAccepter` - Endpoint accepters
-
-### Pro Subscription Resources (`rediscloud.redis.io`, `subscription.redis.io`)
-- `Subscription` - Pro tier subscriptions
-- `Database` - Pro tier databases
-- `Peering` - VPC peering for subscriptions
-
-### Transit Gateway (`transit.redis.io`)
-- `GatewayAttachment` - Transit gateway attachments
-
-## Example Usage
+## Example Resources
 
 ### Create an Essentials Subscription
 ```yaml
@@ -145,6 +213,7 @@ spec:
     name: "My Pro Subscription"
     memoryStorage: "ram"
     paymentMethod: "credit-card"
+    paymentMethodId: 1  # Required for credit-card payment method
     cloudProvider:
     - provider: "AWS"
       region:
@@ -195,29 +264,50 @@ kubectl get events --sort-by=.metadata.creationTimestamp
 ### Clean Up
 ```bash
 # Remove test resources
-./scripts/test-provider.sh cleanup
+kubectl delete -f examples/
 
-# Delete entire cluster
-kind delete cluster --name rediscloud-test
+# Tear down local development environment
+make controlplane.down
+
+# Delete entire Kind cluster
+kind delete cluster --name kind
 ```
 
-## Environment Variables
+## CI/CD Integration
 
-The test scripts use these environment variables (configured in `.envrc`):
+The project uses GitHub Actions for continuous integration:
 
-- `REDISCLOUD_API_KEY` - Your RedisCloud API key
-- `REDISCLOUD_SECRET_KEY` - Your RedisCloud secret key  
-- `REDISCLOUD_URL` - RedisCloud API URL (default: https://api.redislabs.com/v1)
-- `KIND_CLUSTER_NAME` - Kind cluster name (default: rediscloud-test)
-- `CROSSPLANE_NAMESPACE` - Crossplane namespace (default: crossplane-system)
-- `PROVIDER_NAMESPACE` - Provider namespace (default: crossplane-system)
-- `KUBECONFIG_PATH` - Kubeconfig file path (default: ./.kube/config)
+- **Unit tests** run on every pull request
+- **E2E tests** run on every pull request
+- **Code coverage** is reported to Codecov
+- **Linting** enforces code quality standards
+
+To run the same checks locally before pushing:
+```bash
+make reviewable
+```
 
 ## Development Workflow
 
 1. Make changes to the provider code
-2. Rebuild: `make build`
-3. Reload provider: `./scripts/test-provider.sh provider`
-4. Test changes: `./scripts/test-provider.sh test`
+2. Run unit tests: `make test`
+3. Build provider: `make build`
+4. Deploy locally: `make local-deploy`
+5. Test your changes with example resources
+6. Run full e2e suite: `make e2e`
+7. Submit PR - CI will run all tests automatically
 
-The provider image uses `packagePullPolicy: Never` so it will use the locally built image without pulling from a registry.
+## Environment Variables
+
+The following environment variables can be used to configure testing:
+
+- `UPTEST_CLOUD_CREDENTIALS` - JSON string with RedisCloud credentials
+- `UPTEST_EXAMPLE_LIST` - Comma-separated list of example files to test
+- `UPTEST_DATASOURCE_PATH` - Path to datasource file for dynamic values
+- `CROSSPLANE_NAMESPACE` - Namespace for Crossplane (default: crossplane-system)
+
+## Additional Resources
+
+- [Crossplane Testing Guide](https://crossplane.io/docs/latest/contributing/testing.html)
+- [Uptest Documentation](https://github.com/crossplane/uptest)
+- [RedisCloud API Documentation](https://api.redislabs.com/v1/swagger-ui.html)

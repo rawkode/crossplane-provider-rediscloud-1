@@ -13,6 +13,9 @@
   };
 
   packages = with pkgs; [
+    # Crossplane
+    crossplane-cli
+
     # Building
     curl
     git
@@ -29,5 +32,8 @@
     kubectl
     kubernetes-helm
     podman
+
+    # Text processing
+    gettext  # Provides envsubst
   ];
 }

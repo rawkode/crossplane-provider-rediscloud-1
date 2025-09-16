@@ -1,0 +1,7 @@
+# RedisCloud API Credentials
+# Get these from: RedisCloud Console → Account Settings → API Keys
+export REDISCLOUD_API_KEY="YOUR_API_KEY_HERE"
+export REDISCLOUD_SECRET_KEY="YOUR_SECRET_KEY_HERE"
+
+# Optional
+export REDISCLOUD_URL="https://api.redislabs.com/v1"

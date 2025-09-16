@@ -81,6 +81,10 @@ type ActiveSubscriptionDatabaseInitParameters struct {
 	// TCP port on which the database is available
 	Port *float64 `json:"port,omitempty" tf:"port,omitempty"`
 
+	// The Redis version of the database. If omitted, the Redis version will be the default.  Modifying this attribute will force creation of a new resource.
+	// Defines the Redis database version. If omitted, the Redis version will be set to the default version
+	RedisVersion *string `json:"redisVersion,omitempty" tf:"redis_version,omitempty"`
+
 	// Active subscription to create the database in. Modifying this attribute will force creation of a new resource.
 	// Identifier of the subscription
 	SubscriptionID *float64 `json:"subscriptionId,omitempty" tf:"subscription_id,omitempty"`
@@ -174,6 +178,10 @@ type ActiveSubscriptionDatabaseObservation struct {
 	// Region public and private endpoints to access the database
 	// +mapType=granular
 	PublicEndpoint map[string]*string `json:"publicEndpoint,omitempty" tf:"public_endpoint,omitempty"`
+
+	// The Redis version of the database. If omitted, the Redis version will be the default.  Modifying this attribute will force creation of a new resource.
+	// Defines the Redis database version. If omitted, the Redis version will be set to the default version
+	RedisVersion *string `json:"redisVersion,omitempty" tf:"redis_version,omitempty"`
 
 	// Active subscription to create the database in. Modifying this attribute will force creation of a new resource.
 	// Identifier of the subscription
@@ -272,6 +280,11 @@ type ActiveSubscriptionDatabaseParameters struct {
 	// TCP port on which the database is available
 	// +kubebuilder:validation:Optional
 	Port *float64 `json:"port,omitempty" tf:"port,omitempty"`
+
+	// The Redis version of the database. If omitted, the Redis version will be the default.  Modifying this attribute will force creation of a new resource.
+	// Defines the Redis database version. If omitted, the Redis version will be set to the default version
+	// +kubebuilder:validation:Optional
+	RedisVersion *string `json:"redisVersion,omitempty" tf:"redis_version,omitempty"`
 
 	// Active subscription to create the database in. Modifying this attribute will force creation of a new resource.
 	// Identifier of the subscription

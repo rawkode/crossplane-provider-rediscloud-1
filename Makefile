@@ -12,7 +12,7 @@ TERRAFORM_VERSION_VALID := $(shell [ "$(TERRAFORM_VERSION)" = "`printf "$(TERRAF
 
 export TERRAFORM_PROVIDER_SOURCE ?= RedisLabs/rediscloud
 export TERRAFORM_PROVIDER_REPO ?= https://github.com/RedisLabs/terraform-provider-rediscloud
-export TERRAFORM_PROVIDER_VERSION ?= 2.1.5
+export TERRAFORM_PROVIDER_VERSION ?= 2.4.1
 export TERRAFORM_PROVIDER_DOWNLOAD_NAME ?= terraform-provider-rediscloud
 export TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX ?= https://github.com/RedisLabs/${TERRAFORM_PROVIDER_DOWNLOAD_NAME}/releases/download/v${TERRAFORM_PROVIDER_VERSION}
 export TERRAFORM_NATIVE_PROVIDER_BINARY ?= ${TERRAFORM_PROVIDER_DOWNLOAD_NAME}_v${TERRAFORM_PROVIDER_VERSION}_x5
@@ -175,12 +175,13 @@ run: go.build
 # ====================================================================================
 # End to End Testing
 CROSSPLANE_VERSION = 1.16.0
-CROSSPLANE_NAMESPACE = upbound-system
+CROSSPLANE_NAMESPACE ?= crossplane-system
 -include build/makelib/local.xpkg.mk
 -include build/makelib/controlplane.mk
 
 # This target requires the following environment variables to be set:
 # - UPTEST_EXAMPLE_LIST, a comma-separated list of examples to test
+#   Default: examples/rediscloud/subscription.yaml
 #   To ensure the proper functioning of the end-to-end test resource pre-deletion hook, it is crucial to arrange your resources appropriately.
 #   You can check the basic implementation here: https://github.com/crossplane/uptest/blob/main/internal/templates/03-delete.yaml.tmpl.
 # - UPTEST_CLOUD_CREDENTIALS (optional), multiple sets of AWS IAM User credentials specified as key=value pairs.
@@ -193,15 +194,31 @@ CROSSPLANE_NAMESPACE = upbound-system
 #   aws_secret_access_key = REDACTED'
 #   The associated `ProviderConfig`s will be named as `default` and `peer`.
 # - UPTEST_DATASOURCE_PATH (optional), please see https://github.com/crossplane/uptest#injecting-dynamic-values-and-datasource
+# - REDISCLOUD_PAYMENT_METHOD_ID (optional), the payment method ID to use for subscription examples
+# - REDISCLOUD_API_KEY, REDISCLOUD_SECRET_KEY, REDISCLOUD_URL - RedisCloud API credentials to fetch payment method ID
+UPTEST_EXAMPLE_LIST ?= examples/rediscloud/subscription.yaml,examples/rediscloud/database.yaml,examples/rediscloud/subscription-peering.yaml,examples/rediscloud/acl-user.yaml,examples/rediscloud/acl-rule.yaml,examples/rediscloud/cloud-account.yaml
 uptest: $(UPTEST) $(KUBECTL) $(KUTTL)
 	@$(INFO) running automated tests
-	@KUBECTL=$(KUBECTL) KUTTL=$(KUTTL) $(UPTEST) e2e "${UPTEST_EXAMPLE_LIST}" --data-source="${UPTEST_DATASOURCE_PATH}" --setup-script=cluster/test/setup.sh --default-conditions="Test" || $(FAIL)
+	@# Create datasource.yaml file before running uptest (will be updated by setup script)
+	@mkdir -p cluster/test
+	@echo "# Placeholder datasource file - will be populated by setup script" > cluster/test/datasource.yaml
+	@echo "payment_method_id: \"\"" >> cluster/test/datasource.yaml
+	@echo "api_key: \"\"" >> cluster/test/datasource.yaml
+	@echo "secret_key: \"\"" >> cluster/test/datasource.yaml
+	@echo "url: \"\"" >> cluster/test/datasource.yaml
+	@KUBECTL=$(KUBECTL) KUTTL=$(KUTTL) \
+		REDISCLOUD_API_KEY=$${REDISCLOUD_API_KEY:-} \
+		REDISCLOUD_SECRET_KEY=$${REDISCLOUD_SECRET_KEY:-} \
+		REDISCLOUD_URL=$${REDISCLOUD_URL:-} \
+		REDISCLOUD_PAYMENT_METHOD_ID=$${REDISCLOUD_PAYMENT_METHOD_ID:-} \
+		UPTEST_DATASOURCE_PATH="cluster/test/datasource.yaml" \
+		$(UPTEST) e2e "$(UPTEST_EXAMPLE_LIST)" --data-source="cluster/test/datasource.yaml" --setup-script=cluster/test/setup.sh --default-conditions="Test" || $(FAIL)
 	@$(OK) running automated tests
 
 local-deploy: build controlplane.up local.xpkg.deploy.provider.$(PROJECT_NAME)
 	@$(INFO) running locally built provider
-	@$(KUBECTL) wait provider.pkg $(PROJECT_NAME) --for condition=Healthy --timeout 5m
-	@$(KUBECTL) -n upbound-system wait --for=condition=Available deployment --all --timeout=5m
+	@$(KUBECTL) wait provider.pkg $(PROJECT_NAME) --for condition=Installed --timeout 5m
+	@$(KUBECTL) -n $(CROSSPLANE_NAMESPACE) wait --for=condition=Available deployment --all --timeout=5m
 	@$(OK) running locally built provider
 
 e2e: local-deploy uptest
@@ -260,6 +277,26 @@ crossplane.help:
 help-special: crossplane.help
 
 .PHONY: crossplane.help help-special
+
+# ====================================================================================
+# RedisCloud API Testing
+
+# Fetch payment methods from RedisCloud API
+.PHONY: rediscloud-payment-methods
+rediscloud-payment-methods:
+	@$(INFO) Fetching RedisCloud payment methods
+	@curl -s -X GET "$${REDISCLOUD_URL}/payment-methods" \
+		-H "x-api-key: $${REDISCLOUD_API_KEY}" \
+		-H "x-api-secret-key: $${REDISCLOUD_SECRET_KEY}" | jq '.' || $(FAIL)
+	@$(OK) Fetched RedisCloud payment methods
+
+# Get the first payment method ID from RedisCloud API
+.PHONY: rediscloud-first-payment-method-id
+rediscloud-first-payment-method-id:
+	@curl -s -X GET "$${REDISCLOUD_URL}/payment-methods" \
+		-H "x-api-key: $${REDISCLOUD_API_KEY}" \
+		-H "x-api-secret-key: $${REDISCLOUD_SECRET_KEY}" | jq -r '.paymentMethods[0].id // empty'
+
 
 # TODO(negz): Update CI to use these targets.
 vendor: modules.download

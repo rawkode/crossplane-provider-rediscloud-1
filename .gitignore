@@ -9,6 +9,10 @@ cover.out
 # ignore IDE folders
 .vscode/
 .idea/
+.claude/
+
+# Secrets
+.envrc.local
 
 # Devenv
 .devenv*
@@ -22,3 +26,6 @@ devenv.local.nix
 
 # Testing
 .kube/
+kubeconfig
+cluster/test/processed-examples/
+cluster/test/datasource.yaml

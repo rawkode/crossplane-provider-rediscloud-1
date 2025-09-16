@@ -229,6 +229,11 @@ func (in *DatabaseInitParameters) DeepCopyInto(out *DatabaseInitParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.RedisVersion != nil {
+		in, out := &in.RedisVersion, &out.RedisVersion
+		*out = new(string)
+		**out = **in
+	}
 	if in.RemoteBackup != nil {
 		in, out := &in.RemoteBackup, &out.RemoteBackup
 		*out = make([]RemoteBackupInitParameters, len(*in))
@@ -272,6 +277,16 @@ func (in *DatabaseInitParameters) DeepCopyInto(out *DatabaseInitParameters) {
 		in, out := &in.SubscriptionID, &out.SubscriptionID
 		*out = new(float64)
 		**out = **in
+	}
+	if in.SubscriptionIDRef != nil {
+		in, out := &in.SubscriptionIDRef, &out.SubscriptionIDRef
+		*out = new(v1.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SubscriptionIDSelector != nil {
+		in, out := &in.SubscriptionIDSelector, &out.SubscriptionIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.SupportOssClusterAPI != nil {
 		in, out := &in.SupportOssClusterAPI, &out.SupportOssClusterAPI
@@ -477,6 +492,11 @@ func (in *DatabaseObservation) DeepCopyInto(out *DatabaseObservation) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.RedisVersion != nil {
+		in, out := &in.RedisVersion, &out.RedisVersion
+		*out = new(string)
+		**out = **in
+	}
 	if in.RemoteBackup != nil {
 		in, out := &in.RemoteBackup, &out.RemoteBackup
 		*out = make([]RemoteBackupObservation, len(*in))
@@ -678,6 +698,11 @@ func (in *DatabaseParameters) DeepCopyInto(out *DatabaseParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.RedisVersion != nil {
+		in, out := &in.RedisVersion, &out.RedisVersion
+		*out = new(string)
+		**out = **in
+	}
 	if in.RemoteBackup != nil {
 		in, out := &in.RemoteBackup, &out.RemoteBackup
 		*out = make([]RemoteBackupParameters, len(*in))
@@ -721,6 +746,16 @@ func (in *DatabaseParameters) DeepCopyInto(out *DatabaseParameters) {
 		in, out := &in.SubscriptionID, &out.SubscriptionID
 		*out = new(float64)
 		**out = **in
+	}
+	if in.SubscriptionIDRef != nil {
+		in, out := &in.SubscriptionIDRef, &out.SubscriptionIDRef
+		*out = new(v1.Reference)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SubscriptionIDSelector != nil {
+		in, out := &in.SubscriptionIDSelector, &out.SubscriptionIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.SupportOssClusterAPI != nil {
 		in, out := &in.SupportOssClusterAPI, &out.SupportOssClusterAPI

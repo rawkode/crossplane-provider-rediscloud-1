@@ -23,6 +23,18 @@ type ActiveSubscriptionInitParameters struct {
 	// Information about the planned databases used to optimise the database infrastructure. This information is only used when creating a new subscription and any changes will be ignored after this.
 	CreationPlan []CreationPlanInitParameters `json:"creationPlan,omitempty" tf:"creation_plan,omitempty"`
 
+	// The customer managed keys (CMK) to use for this subscription. In an active-active subscription, you must set a key for each region.
+	// CMK resources used to encrypt the databases in this subscription. Ignored if `customer_managed_key_enabled` set to false. See documentation for CMK flow.
+	CustomerManagedKey []CustomerManagedKeyInitParameters `json:"customerManagedKey,omitempty" tf:"customer_managed_key,omitempty"`
+
+	// The grace period for deleting the subscription. If not set, will default to immediate deletion grace period.
+	// The grace period for deleting the subscription. If not set, will default to immediate deletion grace period.
+	CustomerManagedKeyDeletionGracePeriod *string `json:"customerManagedKeyDeletionGracePeriod,omitempty" tf:"customer_managed_key_deletion_grace_period,omitempty"`
+
+	// Whether to enable the CMK flow.
+	// Whether to enable CMK (customer managed key) for the subscription. If this is true, then the subscription will be put in a pending state until you supply the CMEK. See documentation for further details on this process. Defaults to false.
+	CustomerManagedKeyEnabled *bool `json:"customerManagedKeyEnabled,omitempty" tf:"customer_managed_key_enabled,omitempty"`
+
 	// The subscription's maintenance window specification, documented below.
 	// Specify the subscription's maintenance windows
 	MaintenanceWindows []MaintenanceWindowsInitParameters `json:"maintenanceWindows,omitempty" tf:"maintenance_windows,omitempty"`
@@ -31,7 +43,7 @@ type ActiveSubscriptionInitParameters struct {
 	// A meaningful name to identify the subscription
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
 
-	// card or marketplace). If credit-card is specified, payment_method_id must be defined. Default: 'credit-card'. (Changes to) this attribute are ignored after creation.
+	// The payment method for the requested subscription, (either credit-card or marketplace).  Must not be set for direct contracts. If credit-card is specified, payment_method_id must be defined. Default: 'credit-card'. (Changes to) this attribute are ignored after creation.
 	// Payment method for the requested subscription. If credit card is specified, the payment method id must be defined. This information is only used when creating a new subscription and any changes will be ignored after this.
 	PaymentMethod *string `json:"paymentMethod,omitempty" tf:"payment_method,omitempty"`
 
@@ -39,7 +51,7 @@ type ActiveSubscriptionInitParameters struct {
 	// A valid payment method pre-defined in the current account
 	PaymentMethodID *string `json:"paymentMethodId,omitempty" tf:"payment_method_id,omitempty"`
 
-	// The Redis version of the databases in the subscription. If omitted, the Redis version will be the default. Modifying this attribute will force creation of a new resource.
+	// The Redis version of the databases in the subscription. If omitted, the Redis version will be the default. Deprecated: This attribute is deprecated on the subscription level. Please specify
 	// Version of Redis to create
 	RedisVersion *string `json:"redisVersion,omitempty" tf:"redis_version,omitempty"`
 }
@@ -54,6 +66,22 @@ type ActiveSubscriptionObservation struct {
 	// Information about the planned databases used to optimise the database infrastructure. This information is only used when creating a new subscription and any changes will be ignored after this.
 	CreationPlan []CreationPlanObservation `json:"creationPlan,omitempty" tf:"creation_plan,omitempty"`
 
+	// The customer managed keys (CMK) to use for this subscription. In an active-active subscription, you must set a key for each region.
+	// CMK resources used to encrypt the databases in this subscription. Ignored if `customer_managed_key_enabled` set to false. See documentation for CMK flow.
+	CustomerManagedKey []CustomerManagedKeyObservation `json:"customerManagedKey,omitempty" tf:"customer_managed_key,omitempty"`
+
+	// The grace period for deleting the subscription. If not set, will default to immediate deletion grace period.
+	// The grace period for deleting the subscription. If not set, will default to immediate deletion grace period.
+	CustomerManagedKeyDeletionGracePeriod *string `json:"customerManagedKeyDeletionGracePeriod,omitempty" tf:"customer_managed_key_deletion_grace_period,omitempty"`
+
+	// Whether to enable the CMK flow.
+	// Whether to enable CMK (customer managed key) for the subscription. If this is true, then the subscription will be put in a pending state until you supply the CMEK. See documentation for further details on this process. Defaults to false.
+	CustomerManagedKeyEnabled *bool `json:"customerManagedKeyEnabled,omitempty" tf:"customer_managed_key_enabled,omitempty"`
+
+	// Outputs the id of the service account associated with the subscription. Useful as part of the CMK flow.
+	// The principal of the Redis service account that the subscription is created in. This is used by the user to give access to their customer managed key
+	CustomerManagedKeyRedisServiceAccount *string `json:"customerManagedKeyRedisServiceAccount,omitempty" tf:"customer_managed_key_redis_service_account,omitempty"`
+
 	ID *string `json:"id,omitempty" tf:"id,omitempty"`
 
 	// The subscription's maintenance window specification, documented below.
@@ -64,7 +92,7 @@ type ActiveSubscriptionObservation struct {
 	// A meaningful name to identify the subscription
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
 
-	// card or marketplace). If credit-card is specified, payment_method_id must be defined. Default: 'credit-card'. (Changes to) this attribute are ignored after creation.
+	// The payment method for the requested subscription, (either credit-card or marketplace).  Must not be set for direct contracts. If credit-card is specified, payment_method_id must be defined. Default: 'credit-card'. (Changes to) this attribute are ignored after creation.
 	// Payment method for the requested subscription. If credit card is specified, the payment method id must be defined. This information is only used when creating a new subscription and any changes will be ignored after this.
 	PaymentMethod *string `json:"paymentMethod,omitempty" tf:"payment_method,omitempty"`
 
@@ -76,7 +104,7 @@ type ActiveSubscriptionObservation struct {
 	// Pricing details totalled over this Subscription
 	Pricing []PricingObservation `json:"pricing,omitempty" tf:"pricing,omitempty"`
 
-	// The Redis version of the databases in the subscription. If omitted, the Redis version will be the default. Modifying this attribute will force creation of a new resource.
+	// The Redis version of the databases in the subscription. If omitted, the Redis version will be the default. Deprecated: This attribute is deprecated on the subscription level. Please specify
 	// Version of Redis to create
 	RedisVersion *string `json:"redisVersion,omitempty" tf:"redis_version,omitempty"`
 }
@@ -93,6 +121,21 @@ type ActiveSubscriptionParameters struct {
 	// +kubebuilder:validation:Optional
 	CreationPlan []CreationPlanParameters `json:"creationPlan,omitempty" tf:"creation_plan,omitempty"`
 
+	// The customer managed keys (CMK) to use for this subscription. In an active-active subscription, you must set a key for each region.
+	// CMK resources used to encrypt the databases in this subscription. Ignored if `customer_managed_key_enabled` set to false. See documentation for CMK flow.
+	// +kubebuilder:validation:Optional
+	CustomerManagedKey []CustomerManagedKeyParameters `json:"customerManagedKey,omitempty" tf:"customer_managed_key,omitempty"`
+
+	// The grace period for deleting the subscription. If not set, will default to immediate deletion grace period.
+	// The grace period for deleting the subscription. If not set, will default to immediate deletion grace period.
+	// +kubebuilder:validation:Optional
+	CustomerManagedKeyDeletionGracePeriod *string `json:"customerManagedKeyDeletionGracePeriod,omitempty" tf:"customer_managed_key_deletion_grace_period,omitempty"`
+
+	// Whether to enable the CMK flow.
+	// Whether to enable CMK (customer managed key) for the subscription. If this is true, then the subscription will be put in a pending state until you supply the CMEK. See documentation for further details on this process. Defaults to false.
+	// +kubebuilder:validation:Optional
+	CustomerManagedKeyEnabled *bool `json:"customerManagedKeyEnabled,omitempty" tf:"customer_managed_key_enabled,omitempty"`
+
 	// The subscription's maintenance window specification, documented below.
 	// Specify the subscription's maintenance windows
 	// +kubebuilder:validation:Optional
@@ -103,7 +146,7 @@ type ActiveSubscriptionParameters struct {
 	// +kubebuilder:validation:Optional
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
 
-	// card or marketplace). If credit-card is specified, payment_method_id must be defined. Default: 'credit-card'. (Changes to) this attribute are ignored after creation.
+	// The payment method for the requested subscription, (either credit-card or marketplace).  Must not be set for direct contracts. If credit-card is specified, payment_method_id must be defined. Default: 'credit-card'. (Changes to) this attribute are ignored after creation.
 	// Payment method for the requested subscription. If credit card is specified, the payment method id must be defined. This information is only used when creating a new subscription and any changes will be ignored after this.
 	// +kubebuilder:validation:Optional
 	PaymentMethod *string `json:"paymentMethod,omitempty" tf:"payment_method,omitempty"`
@@ -113,7 +156,7 @@ type ActiveSubscriptionParameters struct {
 	// +kubebuilder:validation:Optional
 	PaymentMethodID *string `json:"paymentMethodId,omitempty" tf:"payment_method_id,omitempty"`
 
-	// The Redis version of the databases in the subscription. If omitted, the Redis version will be the default. Modifying this attribute will force creation of a new resource.
+	// The Redis version of the databases in the subscription. If omitted, the Redis version will be the default. Deprecated: This attribute is deprecated on the subscription level. Please specify
 	// Version of Redis to create
 	// +kubebuilder:validation:Optional
 	RedisVersion *string `json:"redisVersion,omitempty" tf:"redis_version,omitempty"`
@@ -191,6 +234,41 @@ type CreationPlanParameters struct {
 	// Cloud networking details, per region (multiple regions for Active-Active cluster)
 	// +kubebuilder:validation:Optional
 	Region []RegionParameters `json:"region" tf:"region,omitempty"`
+}
+
+type CustomerManagedKeyInitParameters struct {
+
+	// Name of the region for the customer managed key as defined by the cloud provider.
+	// Name of region for the customer managed key as defined by the cloud provider.
+	Region *string `json:"region,omitempty" tf:"region,omitempty"`
+
+	// Resource name of the customer managed key as defined by the cloud provider, e.g. projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/KEY_NAME
+	// Resource name of the customer managed key as defined by the cloud provider, e.g. projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/KEY_NAME
+	ResourceName *string `json:"resourceName,omitempty" tf:"resource_name,omitempty"`
+}
+
+type CustomerManagedKeyObservation struct {
+
+	// Name of the region for the customer managed key as defined by the cloud provider.
+	// Name of region for the customer managed key as defined by the cloud provider.
+	Region *string `json:"region,omitempty" tf:"region,omitempty"`
+
+	// Resource name of the customer managed key as defined by the cloud provider, e.g. projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/KEY_NAME
+	// Resource name of the customer managed key as defined by the cloud provider, e.g. projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/KEY_NAME
+	ResourceName *string `json:"resourceName,omitempty" tf:"resource_name,omitempty"`
+}
+
+type CustomerManagedKeyParameters struct {
+
+	// Name of the region for the customer managed key as defined by the cloud provider.
+	// Name of region for the customer managed key as defined by the cloud provider.
+	// +kubebuilder:validation:Optional
+	Region *string `json:"region" tf:"region,omitempty"`
+
+	// Resource name of the customer managed key as defined by the cloud provider, e.g. projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/KEY_NAME
+	// Resource name of the customer managed key as defined by the cloud provider, e.g. projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/KEY_NAME
+	// +kubebuilder:validation:Optional
+	ResourceName *string `json:"resourceName" tf:"resource_name,omitempty"`
 }
 
 type MaintenanceWindowsInitParameters struct {

@@ -39,6 +39,13 @@ func GetProvider() *ujconfig.Provider {
 		configure(pc)
 	}
 
+	// Configure cross-resource references
+	pc.AddResourceConfigurator("rediscloud_subscription_database", func(r *ujconfig.Resource) {
+		r.References["subscription_id"] = ujconfig.Reference{
+			TerraformName: "rediscloud_subscription",
+		}
+	})
+
 	pc.ConfigureResources()
 	return pc
 }

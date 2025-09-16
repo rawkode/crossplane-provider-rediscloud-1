@@ -16,7 +16,8 @@ spec:
     creationPlan:
     - quantity: 1
       replication: true
-      throughputMeasurementBy: "number-of-shards"
-      throughputMeasurementValue: 1
+      memoryLimitInGb: 1
+      throughputMeasurementBy: "operations-per-second"
+      throughputMeasurementValue: 10000
   providerConfigRef:
     name: default

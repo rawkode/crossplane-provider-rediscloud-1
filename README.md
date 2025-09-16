@@ -120,10 +120,37 @@ make build
 
 ### Testing
 
-Run the test harness (uses podman by default):
+Run unit tests:
 
 ```bash
-./scripts/test-provider.sh
+make test
+```
+
+Run end-to-end tests:
+
+```bash
+# Run with default examples (subscription + database)
+make e2e
+
+# Run with custom examples
+UPTEST_EXAMPLE_LIST="examples/rediscloud/acl-user.yaml" make e2e
+```
+
+#### E2E Testing with RedisCloud Pro Subscriptions
+
+Pro subscriptions require a valid payment method ID. The test infrastructure automatically handles this:
+
+```bash
+# Set RedisCloud API credentials
+export REDISCLOUD_API_KEY="your-api-key"
+export REDISCLOUD_SECRET_KEY="your-secret-key"
+export REDISCLOUD_URL="https://api.redislabs.com/v1"
+
+# Run e2e tests (automatically fetches payment method ID)
+make e2e
+
+# Or with 1Password integration
+op run -- make e2e
 ```
 
 For detailed testing instructions, see [TESTING.md](TESTING.md).

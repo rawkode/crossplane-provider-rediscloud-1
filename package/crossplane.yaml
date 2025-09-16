@@ -2,3 +2,12 @@ apiVersion: meta.pkg.crossplane.io/v1
 kind: Provider
 metadata:
   name: provider-rediscloud
+  annotations:
+    meta.crossplane.io/maintainer: Redis Labs <info@redis.com>
+    meta.crossplane.io/source: github.com/redislabs/crossplane-provider-rediscloud
+    meta.crossplane.io/license: Apache-2.0
+    meta.crossplane.io/description: The Redis Cloud Crossplane provider adds support for managing Redis Cloud resources in Kubernetes.
+    meta.crossplane.io/readme: |
+      The Redis Cloud provider for Crossplane enables infrastructure operators to manage Redis Cloud resources using Kubernetes custom resources.
+
+      Available resources include subscriptions, databases, ACLs, and more.

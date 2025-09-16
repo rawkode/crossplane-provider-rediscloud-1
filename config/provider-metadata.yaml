@@ -94,6 +94,23 @@ resources:
             timeouts.delete: '- (Defaults to 5 mins) Used when destroying the User.'
             timeouts.update: '- (Defaults to 5 mins) Used when updating the User.'
         importStatements: []
+    rediscloud_active_active_private_link:
+        subCategory: ""
+        description: PrivateLink resource for Active Active Subscription in the Redis Cloud Terraform provider.
+        name: rediscloud_active_active_private_link
+        title: rediscloud_active_active_private_link
+        argumentDocs:
+            connections: (block)
+            databases: (block)
+            principal: '- (Required) The principal(s) attached to the PrivateLink.'
+            principal.principal: '- (Required) The principal to be added to this PrivateLink. The format depends upon the type of principal you wish to attach.'
+            principal.principal_alias: '- The friendly name to refer to the principal.'
+            principal.principal_type: '- (Required) The principal type. Can be one of: aws_account, organization, organization_unit, iam_role, iam_user, service_principal.'
+            region_id: '- (Required)'
+            resource_configuration_id: '- Configuration I'
+            share_name: '- (Required) The share name of the PrivateLink.'
+            subscription_id: '- (Required) The ID of the Active Active Subscription to link to.  Modifying this attribute will force creation of a new resource.'
+        importStatements: []
     rediscloud_active_active_private_service_connect:
         subCategory: ""
         description: Private Service Connect resource for Active-Active Subscription in the Redis Cloud Terraform provider.
@@ -301,9 +318,6 @@ resources:
                   "creation_plan": [
                     {
                       "dataset_size_in_gb": 1,
-                      "modules": [
-                        "RedisJSON"
-                      ],
                       "quantity": 1,
                       "region": [
                         {
@@ -334,18 +348,24 @@ resources:
             creation_plan.modules: '- (Optional) A list of modules to be enabled on all deployments of this database. Either: RedisJSON or RediSearch.'
             creation_plan.quantity: '- (Required) The planned number of databases in the subscription.'
             creation_plan.region: '- (Required) Deployment region block, documented below'
-            creation_plan.region.days: '- A list of weekdays on which the window is open (''Monday'', ''Tuesday'' etc)'
-            creation_plan.region.duration_in_hours: '- How long the window is open (4-24 hours)'
-            creation_plan.region.mode: '- Either automatic (Redis specified) or manual (User specified)'
             creation_plan.region.networking_deployment_cidr: '- (Required) Deployment CIDR mask. The total number of bits must be 24 (x.x.x.x/24)'
             creation_plan.region.read_operations_per_second: '- (Required) Throughput measurement for an active-active subscription'
             creation_plan.region.region: '- (Required) Deployment region as defined by the cloud provider'
-            creation_plan.region.start_hour: '- What hour in the day (0-23) the window opens'
-            creation_plan.region.window: '- A list of windows (if manual mode)'
             creation_plan.region.write_operations_per_second: '- (Required) Throughput measurement for an active-active subscription'
+            customer_managed_key: '- (Optional) The customer managed keys (CMK) to use for this subscription. In an active-active subscription, you must set a key for each region.'
+            customer_managed_key.days: '- A list of weekdays on which the window is open (''Monday'', ''Tuesday'' etc)'
+            customer_managed_key.duration_in_hours: '- How long the window is open (4-24 hours)'
+            customer_managed_key.mode: '- Either automatic (Redis specified) or manual (User specified)'
+            customer_managed_key.region: '- Name of the region for the customer managed key as defined by the cloud provider.'
+            customer_managed_key.resource_name: '- Resource name of the customer managed key as defined by the cloud provider, e.g. projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/KEY_NAME'
+            customer_managed_key.start_hour: '- What hour in the day (0-23) the window opens'
+            customer_managed_key.window: '- A list of windows (if manual mode)'
+            customer_managed_key_deletion_grace_period: '- (Optional) The grace period for deleting the subscription. If not set, will default to immediate deletion grace period.'
+            customer_managed_key_enabled: '- (Optional) Whether to enable the CMK flow.'
+            customer_managed_key_redis_service_account: '- Outputs the id of the service account associated with the subscription. Useful as part of the CMK flow.'
             maintenance_windows: '- (Optional) The subscription''s maintenance window specification, documented below.'
             name: '- (Required) A meaningful name to identify the subscription'
-            payment_method: '(Optional) The payment method for the requested subscription, (either credit-card or marketplace). If credit-card is specified, payment_method_id must be defined. Default: ''credit-card''. (Changes to) this attribute are ignored after creation.'
+            payment_method: '- (Optional) The payment method for the requested subscription, (either credit-card or marketplace).  Must not be set for direct contracts. If credit-card is specified, payment_method_id must be defined. Default: ''credit-card''. (Changes to) this attribute are ignored after creation.'
             payment_method_id: '- (Optional) A valid payment method pre-defined in the current account. This value is Optional for AWS/GCP Marketplace accounts, but Required for all other account types'
             priceCurrency: '- The price currency'
             pricePerUnit: '- Price per Unit.'
@@ -353,7 +373,7 @@ resources:
             pricing: '- A list of pricing objects, documented below'
             quantity: '- Self-explanatory.'
             quantityMeasurement: '- Self-explanatory.'
-            redis_version: '- (Optional) The Redis version of the databases in the subscription. If omitted, the Redis version will be the default. Modifying this attribute will force creation of a new resource.'
+            redis_version: '- (Optional) The Redis version of the databases in the subscription. If omitted, the Redis version will be the default. Deprecated: This attribute is deprecated on the subscription level. Please specify'
             region: '- Specify if the cost is associated with a particular region.'
             timeouts.create: '- (Defaults to 30 mins) Used when creating the subscription'
             timeouts.delete: '- (Defaults to 10 mins) Used when destroying the subscription'
@@ -378,9 +398,6 @@ resources:
                     }
                   ],
                   "global_data_persistence": "aof-every-1-second",
-                  "global_modules": [
-                    "RedisJSON"
-                  ],
                   "global_password": "some-random-pass-2",
                   "global_source_ips": [
                     "192.168.0.0/16"
@@ -471,6 +488,7 @@ resources:
             port: '- (Optional) TCP port on which the database is available - must be between 10000 and 19999. Modifying this attribute will force creation of a new resource.'
             private_endpoint: '- A map of which private endpoints can to access the database per region, uses region name as key.'
             public_endpoint: '- A map of which public endpoints can to access the database per region, uses region name as key.'
+            redis_version: '- (Optional) The Redis version of the database. If omitted, the Redis version will be the default.  Modifying this attribute will force creation of a new resource.'
             remote_backup.interval: '(Required) - Defines the interval between backups. Should be in the following format ''every-x-hours''. x is one of [24,12,6,4,2,1]. For example: ''every-4-hours'''
             remote_backup.storage_path: (Required) - Defines a URI representing the backup storage location
             remote_backup.storage_type: (Required) - Defines the provider of the storage location
@@ -579,7 +597,6 @@ resources:
                           "local_write_operations_per_second": 2000
                         }
                       ],
-                      "local_resp_version": "resp2",
                       "networking_deployment_cidr": "10.0.1.0/24",
                       "region": "us-east-2"
                     }
@@ -760,6 +777,84 @@ resources:
             timeouts.delete: '- (Defaults to 10 mins) Used when destroying the subscription'
             timeouts.update: '- (Defaults to 30 mins) Used when updating the subscription'
         importStatements: []
+    rediscloud_private_link:
+        subCategory: ""
+        description: PrivateLink resource for Pro Subscription in the Redis Cloud Terraform provider.
+        name: rediscloud_private_link
+        title: rediscloud_private_link
+        examples:
+            - name: private_link
+              manifest: |-
+                {
+                  "principal": [
+                    {
+                      "principal": "123456789012",
+                      "principal_alias": "principal 1",
+                      "principal_type": "aws_account"
+                    },
+                    {
+                      "principal": "123456789013",
+                      "principal_alias": "principal 2",
+                      "principal_type": "aws_account"
+                    }
+                  ],
+                  "share_name": "${local.rediscloud_private_link_share_name}",
+                  "subscription_id": "${rediscloud_subscription.subscription.id}"
+                }
+              references:
+                share_name: local.rediscloud_private_link_share_name
+                subscription_id: rediscloud_subscription.subscription.id
+              dependencies:
+                rediscloud_subscription.subscription: |-
+                    {
+                      "cloud_provider": [
+                        {
+                          "cloud_account_id": "${data.rediscloud_cloud_account.account.id}",
+                          "provider": "${data.rediscloud_cloud_account.account.provider_type}",
+                          "region": [
+                            {
+                              "networking_deployment_cidr": "10.0.0.0/24",
+                              "preferred_availability_zones": [
+                                "eu-west-1a"
+                              ],
+                              "region": "eu-west-1"
+                            }
+                          ]
+                        }
+                      ],
+                      "creation_plan": [
+                        {
+                          "dataset_size_in_gb": 15,
+                          "quantity": 1,
+                          "replication": true,
+                          "throughput_measurement_by": "operations-per-second",
+                          "throughput_measurement_value": 20000
+                        }
+                      ],
+                      "name": "${local.rediscloud_subscription_name}",
+                      "payment_method_id": "${data.rediscloud_payment_method.card.id}"
+                    }
+        argumentDocs:
+            association_date: '- Date the connection was associated.'
+            association_id: '- Association ID of the PrivateLink connection.'
+            connection_id: '- Connection ID of the PrivateLink connection'
+            connection_type: '- Type of the PrivateLink connection.'
+            connections: '- List of connections associated with the PrivateLink.'
+            database_id: '- ID of the database.'
+            databases: '- List of databases associated with the PrivateLink.'
+            owner_id: '- Owner ID of the connection.'
+            port: '- The port which the database is available on.'
+            principal: '- (Required) The principal(s) attached to the PrivateLink.'
+            principal.principal: '- (Required) The principal to be added to this PrivateLink. The format depends upon the type of principal you wish to attach.'
+            principal.principal_alias: '- The friendly name to refer to the principal.'
+            principal.principal_type: '- (Required) The principal type. Can be one of: aws_account, organization, organization_unit, iam_role, iam_user, service_principal.'
+            resource_configuration_arn: '- ARN of the resource configuration to attach to this PrivateLink'
+            resource_configuration_id: '- ID of the resource configuration to attach to this PrivateLink'
+            resource_link_endpoint: '- The resource link endpoint for the database.'
+            share_arn: '- Share ARN of this PrivateLink.'
+            share_name: '- (Required) The share name of the PrivateLink.'
+            subscription_id: '- (Required) The ID of the Pro Subscription to attach the PrivateLink to. Modifying this attribute will force creation of a new resource.'
+        importStatements: []
     rediscloud_private_service_connect:
         subCategory: ""
         description: Private Service Connect Endpoint resource fo Pro Subscription in the Redis Cloud Terraform provider.
@@ -924,9 +1019,6 @@ resources:
                   "creation_plan": [
                     {
                       "dataset_size_in_gb": 15,
-                      "modules": [
-                        "RedisJSON"
-                      ],
                       "quantity": 1,
                       "replication": true,
                       "throughput_measurement_by": "operations-per-second",
@@ -948,11 +1040,9 @@ resources:
                       ]
                     }
                   ],
-                  "memory_storage": "ram",
                   "name": "subscription-name",
                   "payment_method": "credit-card",
-                  "payment_method_id": "${data.rediscloud_payment_method.card.id}",
-                  "redis_version": "7.2"
+                  "payment_method_id": "${data.rediscloud_payment_method.card.id}"
                 }
               references:
                 cloud_provider.provider: data.rediscloud_cloud_account.account.provider_type
@@ -983,15 +1073,22 @@ resources:
             creation_plan.support_oss_cluster_api: '- (Optional) Support Redis open-source (OSS) Cluster API. Default: ‘false’'
             creation_plan.throughput_measurement_by: '- (Required) Throughput measurement method that will be used by your databases. Either number-of-shards or operations-per-second. number-of-shards is deprecated and only supported for legacy deployments.'
             creation_plan.throughput_measurement_value: '- (Required) Throughput value that will be used by your databases (as applies to selected measurement method). The value needs to be the maximum throughput measurement value defined in one of your databases'
+            customer_managed_key: '- (Optional) The customer managed keys (CMK) to use for this subscription.'
+            customer_managed_key.days: '- A list of weekdays on which the window is open (''Monday'', ''Tuesday'' etc)'
+            customer_managed_key.duration_in_hours: '- How long the window is open (4-24 hours)'
+            customer_managed_key.mode: '- Either automatic (Redis specified) or manual (User specified)'
+            customer_managed_key.resource_name: '- The resource name of the customer managed key as defined by the cloud provider, e.g. projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/KEY_NAME'
+            customer_managed_key.start_hour: '- What hour in the day (0-23) the window opens'
+            customer_managed_key.window: '- A list of windows (if manual mode)'
+            customer_managed_key_deletion_grace_period: '- (Optional) The grace period for deleting the subscription. If not set, will default to immediate deletion grace period.'
+            customer_managed_key_enabled: '- (Optional) Whether to enable the customer managed encryption key flow.'
+            customer_managed_key_redis_service_account: '- Outputs the id of the service account associated with the subscription. Useful as part of the CMK flow.'
             maintenance_windows: '- (Optional) The subscription''s maintenance window specification, documented below.'
             memory_storage: '- (Optional) Memory storage preference: either ‘ram’ or a combination of ‘ram-and-flash’. Default: ‘ram’. Modifying this attribute will force creation of a new resource.'
             name: '- (Required) A meaningful name to identify the subscription'
-            payment_method: '(Optional) The payment method for the requested subscription, (either credit-card or marketplace). If credit-card is specified, payment_method_id must be defined. Default: ''credit-card''. (Changes to) this attribute are ignored after creation.'
+            payment_method: '(Optional) The payment method for the requested subscription, (either credit-card or marketplace). Must not be set for direct contracts. If credit-card is specified, payment_method_id must be defined. Default: ''credit-card''. (Changes to) this attribute are ignored after creation.'
             payment_method_id: '- (Optional) A valid payment method pre-defined in the current account. Only Required when payment_method is credit-card.'
-            redis_version: '- (Optional) The Redis version of the databases in the subscription. If omitted, the Redis version will be the default. Modifying this attribute will force creation of a new resource.'
-            region.days: '- A list of weekdays on which the window is open (''Monday'', ''Tuesday'' etc)'
-            region.duration_in_hours: '- How long the window is open (4-24 hours)'
-            region.mode: '- Either automatic (Redis specified) or manual (User specified)'
+            redis_version: '- (Optional) The Redis version of the databases in the subscription. If omitted, the Redis version will be the default.  Deprecated: This attribute is deprecated on the subscriptions level. Please specify'
             region.multiple_availability_zones: '- (Optional) Support deployment on multiple availability zones within the selected region. Default: ‘false’. Modifying this attribute will force creation of a new resource.'
             region.networking_deployment_cidr: '- (Required) Deployment CIDR mask. The total number of bits must be 24 (x.x.x.x/24). Modifying this attribute will force creation of a new resource.'
             region.networking_vpc_id: |-
@@ -1011,8 +1108,6 @@ resources:
             region.networks.typeDetails: '- Further detail E.g. ''micro''.'
             region.preferred_availability_zones: '- (Optional) Availability zones deployment preferences (for the selected provider & region). If multiple_availability_zones is set to ''true'', select three availability zones from the list. If you don''t want to specify preferred availability zones, set this attribute to an empty list (''[]''). Modifying this attribute will force creation of a new resource.'
             region.region: '- (Required) Deployment region as defined by cloud provider. Modifying this attribute will force creation of a new resource.'
-            region.start_hour: '- What hour in the day (0-23) the window opens'
-            region.window: '- A list of windows (if manual mode)'
             timeouts.create: '- (Defaults to 30 mins) Used when creating the subscription'
             timeouts.delete: '- (Defaults to 10 mins) Used when destroying the subscription'
             timeouts.update: '- (Defaults to 30 mins) Used when updating the subscription'
@@ -1034,11 +1129,6 @@ resources:
                   ],
                   "data_persistence": "aof-every-write",
                   "dataset_size_in_gb": 15,
-                  "modules": [
-                    {
-                      "name": "RedisJSON"
-                    }
-                  ],
                   "name": "database-name",
                   "replication": true,
                   "subscription_id": "${rediscloud_subscription.subscription-resource.id}",
@@ -1073,16 +1163,12 @@ resources:
                       "creation_plan": [
                         {
                           "dataset_size_in_gb": 15,
-                          "modules": [
-                            "RedisJSON"
-                          ],
                           "quantity": 1,
                           "replication": true,
                           "throughput_measurement_by": "operations-per-second",
                           "throughput_measurement_value": 20000
                         }
                       ],
-                      "memory_storage": "ram",
                       "name": "subscription-name",
                       "payment_method": "credit-card",
                       "payment_method_id": "${data.rediscloud_payment_method.card.id}"
@@ -1118,6 +1204,7 @@ resources:
             private_endpoint: '- Private endpoint to access the database'
             protocol: '- (Optional) The protocol that will be used to access the database, (either ‘redis’ or ‘memcached’) Default: ‘redis’. Modifying this attribute will force creation of a new resource.'
             public_endpoint: '- Public endpoint to access the database'
+            redis_version: '- (Optional) The Redis version of the database. If omitted, the Redis version will be the default.'
             remote_backup: block instead
             remote_backup.interval: '(Required) - Defines the interval between backups. Should be in the following format ''every-x-hours''. x is one of [24,12,6,4,2,1]. For example: ''every-4-hours'''
             remote_backup.storage_path: (Required) - Defines a URI representing the backup storage location

@@ -129,6 +129,10 @@ type DatabaseInitParameters struct {
 	// Query performance factor for this specific database
 	QueryPerformanceFactor *string `json:"queryPerformanceFactor,omitempty" tf:"query_performance_factor,omitempty"`
 
+	// The Redis version of the database. If omitted, the Redis version will be the default.
+	// Defines the Redis database version. If omitted, the Redis version will be set to the default version
+	RedisVersion *string `json:"redisVersion,omitempty" tf:"redis_version,omitempty"`
+
 	// block instead
 	// An object that specifies the backup options for the database
 	RemoteBackup []RemoteBackupInitParameters `json:"remoteBackup,omitempty" tf:"remote_backup,omitempty"`
@@ -155,7 +159,16 @@ type DatabaseInitParameters struct {
 
 	// The ID of the subscription to create the database in. Modifying this attribute will force creation of a new resource.
 	// Identifier of the pro subscription
+	// +crossplane:generate:reference:type=github.com/RedisLabs/provider-rediscloud/apis/rediscloud/v1alpha1.Subscription
 	SubscriptionID *float64 `json:"subscriptionId,omitempty" tf:"subscription_id,omitempty"`
+
+	// Reference to a Subscription in rediscloud to populate subscriptionId.
+	// +kubebuilder:validation:Optional
+	SubscriptionIDRef *v1.Reference `json:"subscriptionIdRef,omitempty" tf:"-"`
+
+	// Selector for a Subscription in rediscloud to populate subscriptionId.
+	// +kubebuilder:validation:Optional
+	SubscriptionIDSelector *v1.Selector `json:"subscriptionIdSelector,omitempty" tf:"-"`
 
 	// Support Redis open-source (OSS) Cluster API. Default: ‘false’
 	// Support Redis open-source (OSS) Cluster API
@@ -265,6 +278,10 @@ type DatabaseObservation struct {
 
 	// Query performance factor for this specific database
 	QueryPerformanceFactor *string `json:"queryPerformanceFactor,omitempty" tf:"query_performance_factor,omitempty"`
+
+	// The Redis version of the database. If omitted, the Redis version will be the default.
+	// Defines the Redis database version. If omitted, the Redis version will be set to the default version
+	RedisVersion *string `json:"redisVersion,omitempty" tf:"redis_version,omitempty"`
 
 	// block instead
 	// An object that specifies the backup options for the database
@@ -412,6 +429,11 @@ type DatabaseParameters struct {
 	// +kubebuilder:validation:Optional
 	QueryPerformanceFactor *string `json:"queryPerformanceFactor,omitempty" tf:"query_performance_factor,omitempty"`
 
+	// The Redis version of the database. If omitted, the Redis version will be the default.
+	// Defines the Redis database version. If omitted, the Redis version will be set to the default version
+	// +kubebuilder:validation:Optional
+	RedisVersion *string `json:"redisVersion,omitempty" tf:"redis_version,omitempty"`
+
 	// block instead
 	// An object that specifies the backup options for the database
 	// +kubebuilder:validation:Optional
@@ -443,8 +465,17 @@ type DatabaseParameters struct {
 
 	// The ID of the subscription to create the database in. Modifying this attribute will force creation of a new resource.
 	// Identifier of the pro subscription
+	// +crossplane:generate:reference:type=github.com/RedisLabs/provider-rediscloud/apis/rediscloud/v1alpha1.Subscription
 	// +kubebuilder:validation:Optional
 	SubscriptionID *float64 `json:"subscriptionId,omitempty" tf:"subscription_id,omitempty"`
+
+	// Reference to a Subscription in rediscloud to populate subscriptionId.
+	// +kubebuilder:validation:Optional
+	SubscriptionIDRef *v1.Reference `json:"subscriptionIdRef,omitempty" tf:"-"`
+
+	// Selector for a Subscription in rediscloud to populate subscriptionId.
+	// +kubebuilder:validation:Optional
+	SubscriptionIDSelector *v1.Selector `json:"subscriptionIdSelector,omitempty" tf:"-"`
 
 	// Support Redis open-source (OSS) Cluster API. Default: ‘false’
 	// Support Redis open-source (OSS) Cluster API
@@ -585,7 +616,6 @@ type Database struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.name) || (has(self.initProvider) && has(self.initProvider.name))",message="spec.forProvider.name is a required parameter"
-	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.subscriptionId) || (has(self.initProvider) && has(self.initProvider.subscriptionId))",message="spec.forProvider.subscriptionId is a required parameter"
 	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.throughputMeasurementBy) || (has(self.initProvider) && has(self.initProvider.throughputMeasurementBy))",message="spec.forProvider.throughputMeasurementBy is a required parameter"
 	// +kubebuilder:validation:XValidation:rule="!('*' in self.managementPolicies || 'Create' in self.managementPolicies || 'Update' in self.managementPolicies) || has(self.forProvider.throughputMeasurementValue) || (has(self.initProvider) && has(self.initProvider.throughputMeasurementValue))",message="spec.forProvider.throughputMeasurementValue is a required parameter"
 	Spec   DatabaseSpec   `json:"spec"`
